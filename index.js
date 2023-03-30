@@ -1,24 +1,30 @@
 
-const consentForm = document.getElementById("consent-form")
+const blogFeed = document.getElementById("container")
+const form = document.getElementById("consent-form")
+let postsArr = []
+
+function render() {
+    postsArr.forEach(post => {
+        blogFeed.innerHTML += `
+            <div class="post-el">
+                <h2>${post.title}</h2>
+                <p>${post.body}</p>
+                <hr/>
+            </div>
+        `
+    })
+}
 
 fetch("https://apis.scrimba.com/jsonplaceholder/posts")
     .then(response => response.json())
     .then(data => {
-        const postsArr = data.slice(0,5) 
-        postsArr.forEach(post => {
-            document.getElementById("container").innerHTML += `
-                <div class="post-el">
-                    <h2>${post.title}</h2>
-                    <p>${post.body}</p>
-                    <hr/>
-                </div>
-            `
-        })
+        postsArr = data.slice(0,5) 
+        render()
     })
 
-document.addEventListener('submit', function(e) {
+form.addEventListener('submit', function(e) {
     e.preventDefault()
-    const formData = new FormData(consentForm)
+    const formData = new FormData(form)
     
     const postTitle = formData.get("post-title")
     const postBody = formData.get("post-body")
@@ -30,14 +36,16 @@ document.addEventListener('submit', function(e) {
 
     fetch("https://apis.scrimba.com/jsonplaceholder/posts", {
         method: "POST",
-        body: JSON.stringify({
-            title: postData,
-            completed: false
-        }),
+        body: JSON.stringify(postData),
         headers: {
             "Content-Type": "application/json"
         }
     })
     .then(response => response.json())
-    .then(data => console.log(data))
+    .then(data => {
+        postsArr.unshift(data)
+        blogFeed.innerHTML = ''
+        render()
+        form.reset()
+    })
 })
